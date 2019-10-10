@@ -26,5 +26,9 @@
   {
     "ParameterKey": "NodeGroupName",
     "ParameterValue": "eks-nodegroup"
+  },
+  {
+    "ParameterKey": "NodeImageId",
+    "ParameterValue": "ami-06e8e076b6f229744"
   }
 ]

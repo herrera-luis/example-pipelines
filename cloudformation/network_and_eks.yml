@@ -22,6 +22,11 @@ Parameters:
         Type: String
         Default: 10.0.1.0/24
 
+    BootstrapArguments:
+        Type: String
+        Default: ""
+        Description: "Arguments to pass to the bootstrap script. See files/bootstrap.sh in https://github.com/awslabs/amazon-eks-ami"
+
     InstanceType:
         Description:
             "The EC2 instance type of general purpose"
@@ -53,7 +58,6 @@ Parameters:
 
     NodeImageId:
         Type: String
-        Default: "Ubuntu1804"
         Description: (Optional) Specify your own custom image ID. This value overrides any AWS Systems Manager Parameter Store value specified above.
 
     NodeImageIdSSMParam:
@@ -70,6 +74,13 @@ Parameters:
         Type: Number
         Default: 20
         Description: Node volume size
+
+
+Conditions:
+    HasNodeImageId: !Not
+        - "Fn::Equals":
+              - Ref: NodeImageId
+              - ""
 
 Resources:
 
@@ -170,6 +181,33 @@ Resources:
                     -   !Ref PublicSubnet1
                     -   !Ref PublicSubnet2
 
+    NodeInstanceRole:
+        Type: AWS::IAM::Role
+        Properties:
+            RoleName:
+              !Sub ${EnvironmentName}-Role
+            AssumeRolePolicyDocument:
+                Version: "2012-10-17"
+                Statement:
+                    -   Effect: Allow
+                        Principal:
+                            Service:
+                                - ec2.amazonaws.com
+                        Action:
+                            - "sts:AssumeRole"
+            ManagedPolicyArns:
+                - "arn:aws:iam::aws:policy/AmazonEKSWorkerNodePolicy"
+                - "arn:aws:iam::aws:policy/AmazonEKS_CNI_Policy"
+                - "arn:aws:iam::aws:policy/AmazonEC2ContainerRegistryReadOnly"
+            Path: /
+
+    NodeInstanceProfile:
+        Type: AWS::IAM::InstanceProfile
+        Properties:
+            Path: /
+            Roles:
+                -   Ref: NodeInstanceRole
+
     NodeSecurityGroup:
         Type: AWS::EC2::SecurityGroup
         Properties:
@@ -245,6 +283,35 @@ Resources:
             IpProtocol: tcp
             SourceSecurityGroupId: !Ref ClusterControlPlaneSecurityGroup
             ToPort: 443
+
+    NodeLaunchConfig:
+        Type: AWS::AutoScaling::LaunchConfiguration
+        Properties:
+            AssociatePublicIpAddress: "true"
+            BlockDeviceMappings:
+                -   DeviceName: /dev/xvda
+                    Ebs:
+                        DeleteOnTermination: true
+                        VolumeSize: !Ref NodeVolumeSize
+                        VolumeType: gp2
+            IamInstanceProfile: !Ref NodeInstanceProfile
+            ImageId: !If
+                - HasNodeImageId
+                -   Ref: NodeImageId
+                -   Ref: NodeImageIdSSMParam
+            InstanceType: !Ref NodeInstanceType
+            KeyName: devops-capstone
+            SecurityGroups:
+                -   Ref: NodeSecurityGroup
+            UserData: !Base64
+                "Fn::Sub": |
+                    #!/bin/bash
+                    set -o xtrace
+                    /etc/eks/bootstrap.sh ${ClusterName} ${BootstrapArguments}
+                    /opt/aws/bin/cfn-signal --exit-code $? \
+                             --stack  ${AWS::StackName} \
+                             --resource NodeGroup  \
+                             --region ${AWS::Region}
 
 Outputs:
 
