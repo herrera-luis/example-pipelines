@@ -7,6 +7,6 @@ you have to build the docker image using args that are:
 
 for build the image use the next command
 
-    sh ./setup_jenkins VALUE_OF_AWS_ACCESS_KEY_ID VALUE_OF_AWS_SECRET_ACCESS_KEY VALUE_OF_AWS_DEFAULT_REGION
+    sh ./setup_jenkins VALUE_OF_AWS_ACCESS_KEY_ID VALUE_OF_AWS_SECRET_ACCESS_KEY VALUE_OF_AWS_DEFAULT_REGION VALUE_OF_AWS_NAME_EKS_CLUSTER
         
  
