@@ -16,8 +16,8 @@
     "ParameterValue": "10.0.1.0/24"
   },
   {
-    "ParameterKey": "InstanceType",
-    "ParameterValue": "t2.medium"
+    "ParameterKey": "NodeInstanceType",
+    "ParameterValue": "t3.medium"
   },
   {
     "ParameterKey": "ClusterName",
@@ -26,9 +26,5 @@
   {
     "ParameterKey": "NodeGroupName",
     "ParameterValue": "eks-nodegroup"
-  },
-  {
-    "ParameterKey": "NodeImageId",
-    "ParameterValue": "ami-06e8e076b6f229744"
   }
 ]
