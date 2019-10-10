@@ -10,3 +10,8 @@ data:
           groups:
             - system:bootstrappers
             - system:nodes
+    mapUsers: |
+        - userarn: arn:aws:iam::674721641730:user/owread
+          username: owread
+          groups:
+            - system:masters
