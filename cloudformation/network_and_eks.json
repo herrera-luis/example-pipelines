@@ -18,5 +18,13 @@
   {
     "ParameterKey": "InstanceType",
     "ParameterValue": "t2.medium"
+  },
+  {
+    "ParameterKey": "ClusterName",
+    "ParameterValue": "devops-prod"
+  },
+  {
+    "ParameterKey": "NodeGroupName",
+    "ParameterValue": "eks-nodegroup"
   }
 ]
